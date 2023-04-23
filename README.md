@@ -1,17 +1,15 @@
-//Using Webhook and Pipedream
+Using Webhook and Pipedream
 
-//8 code steps are created.
+8 code steps are created.
+1.Trigger
+https://snipboard.io/3WPmtJ.jpg
 
-//1.Trigger
-//https://snipboard.io/3WPmtJ.jpg
+This code step is always fired every time a story is created, updated or deleted.
 
-//This code step is always fired every time a story is created, updated or deleted.
+2. Identify_Stories - Node.js
+https://snipboard.io/drneKW.jpg
 
-
-//2. Identify_Stories - Node.js
-//https://snipboard.io/drneKW.jpg
-
-//This code step identifies whether the story is created or updated. If it is created, it must have the tag ‘add_to_Coda’. If it has the tag, the remaining code steps //will be performed (except Find_To_Be_Updated_Row) else, the program will be terminated. If the story is updated, the ‘add_to_Coda’ tag info is not available so next //code step ‘Find_To_Be_Updated_Row’ must be performed.
+This code step identifies whether the story is created or updated. If it is created, it must have the tag ‘add_to_Coda’. If it has the tag, the remaining code steps will be performed (except Find_To_Be_Updated_Row) else, the program will be terminated. If the story is updated, the ‘add_to_Coda’ tag info is not available so next code step ‘Find_To_Be_Updated_Row’ must be performed.
 
 export default defineComponent({
   async run({ steps, $ }) {  
@@ -44,19 +42,15 @@ export default defineComponent({
 })
 
 
+3.Find_To_Be_Updated_Row - Python
+https://snipboard.io/AE3myi.jpg
 
-//3.Find_To_Be_Updated_Row - Python
-//https://snipboard.io/AE3myi.jpg
-
-//If the event is a ticket update, its rows must be in the MJ list. If not, then the next code steps will not be performed.
-
+If the event is a ticket update, its rows must be in the MJ list. If not, then the next code steps will not be performed.
 
 import requests
 import json
 
-
 def handler(pd: "pipedream"):
-
 
   #Ticket Update Event
   if pd.steps["Identify_Stories"]["$return_value"] == 1:
@@ -78,27 +72,26 @@ def handler(pd: "pipedream"):
 
     #Exit if a story number is not in the table.
     if len(res["items"]) < 1 :
-      exit()
-     
+      exit()    
  
-//4. Split_Title - Node.js
-//https://snipboard.io/rSXU9w.jpg
+4. Split_Title - Node.js
+https://snipboard.io/rSXU9w.jpg
 
-//This code step tokenizes the title of the story into words. For example:
+This code step tokenizes the title of the story into words. For example:
 
-//Title : PA - UPC 2018
-//Tokens : PA, - , UPC, 2018
+Title : PA - UPC 2018
+Tokens : PA, - , UPC, 2018
 
-//The first token will be the jurisdiction, the third token will be the adopted publication, and the 4th token will be the pub year. Title formatting must be uniform //for each shortcut stories, so that the title will be parsed correctly.
+The first token will be the jurisdiction, the third token will be the adopted publication, and the 4th token will be the pub year. Title formatting must be uniform for each shortcut stories, so that the title will be parsed correctly.
 
-//5. JurisCode_to_JurisName - Node.js
-//https://snipboard.io/i9AZkh.jpg
+5. JurisCode_to_JurisName - Node.js
+https://snipboard.io/i9AZkh.jpg
 
-//This code step converts a jurisdiction abbreviation code to its actual jurisdiction name. For example: 
+This code step converts a jurisdiction abbreviation code to its actual jurisdiction name. For example: 
 
-//AL => Alaska
-//CA => California
-//CA-LA = Los Angeles City
+AL => Alaska
+CA => California
+CA-LA = Los Angeles City
 
 export default defineComponent({
   async run({ steps, $ }) {
@@ -197,39 +190,39 @@ export default defineComponent({
 })
 
 
-//6. Split_Description - Node.js
-//https://snipboard.io/SCm06h.jpg
+6. Split_Description - Node.js
+https://snipboard.io/SCm06h.jpg
 
-//This code step splits the body of the story. It looks for tags
+This code step splits the body of the story. It looks for tags
 
-//‘This is a code update’
+‘This is a code update’
 
-//*Official Name:
-//*Pub:
-//*Agency:
-//*Reference:
-//*Citation:
+*Official Name:
+*Pub:
+*Agency:
+*Reference:
+*Citation:
 
-//*Draft Doc Title:
-//*Draft Source Doc:
-//*Draft Drive:
+*Draft Doc Title:
+*Draft Source Doc:
+*Draft Drive:
 
-//*Final Doc Title:
-//*Final Source Doc:
-//*Final Drive:
+*Final Doc Title:
+*Final Source Doc:
+*Final Drive:
 
-//*Effective Date:
+*Effective Date:
 
-//It uses regular expression, to match the tags and scan the text after the tag until the asterisk character *. The asterisk character * is added to parse tickets that //include multiple corresponding links for each tag. See Image 5.2. Code is modified so that tag sequences/order  will not matter. We can also delete any labels that //will not be of use(e.g. Draft Source doc and more)
+It uses regular expression, to match the tags and scan the text after the tag until the asterisk character *. The asterisk character * is added to parse tickets that include multiple corresponding links for each tag. See Image 5.2. Code is modified so that tag sequences/order  will not matter. We can also delete any labels that will not be of use(e.g. Draft Source doc and more)
 
 
 Image 5.1
-//https://snipboard.io/wTV4Ky.jpg
+https://snipboard.io/wTV4Ky.jpg
 
 Image 5.2
-//https://snipboard.io/HsDd8i.jpg
+https://snipboard.io/HsDd8i.jpg
 
-// To use previous step data, pass the `steps` object to the run() function
+To use previous step data, pass the `steps` object to the run() function
 export default defineComponent({  
   async run({ steps, $ }){
 
@@ -445,34 +438,32 @@ export default defineComponent({
   },
 })
 
+7. Prepare_Coda_Row_Entries - Node.js
+https://snipboard.io/ElYQNL.jpg
 
+This code step is important, especially if it includes multiple corresponding links for each tag. See Image 5.2. It formats data into multiple rows ready for insertion/update  to Coda. For Image 5.2, it will create two rows with story number 45455 and 45455-2. This is the code logic.
 
-//7. Prepare_Coda_Row_Entries - Node.js
-//https://snipboard.io/ElYQNL.jpg
+It will scan the links corresponding to tags ‘Reference’, ‘Draft Doc Title’, ‘Draft Source Doc’, ’Draft Drive’, ‘Final Doc Title’, ‘Final Source Doc’ and ‘Final Drive’. For example, below are the number of links found right after each tag.
 
-//This code step is important, especially if it includes multiple corresponding links for each tag. See Image 5.2. It formats data into multiple rows ready for //insertion/update  to Coda. For Image 5.2, it will create two rows with story number 45455 and 45455-2. This is the code logic.
+Reference - 1
+Draft Doc Title - 2 
+Draft Source Doc - 2
+Draft Drive - 2
+Final Doc Title -3
+Final Source Doc -3 
+Final Drive -3
 
-//It will scan the links corresponding to tags ‘Reference’, ‘Draft Doc Title’, ‘Draft Source Doc’, ’Draft Drive’, ‘Final Doc Title’, ‘Final Source Doc’ and ‘Final //Drive’. For example, below are the number of links found right after each tag.
+Since the maximum number of links found for each tag is 3, then it will create 3 rows. Their story numbers will be: {story_number},  {story_number-2},  {story_number-3}]
 
-//Reference - 1
-//Draft Doc Title - 2 
-//Draft Source Doc - 2
-//Draft Drive - 2
-//Final Doc Title -3
-//Final Source Doc -3 
-//Final Drive -3
+In the example, each row will include the following data.
 
-//Since the maximum number of links found for each tag is 3, then it will create 3 rows. Their story numbers will be: {story_number},  {story_number-2},  //{story_number-3}]
+{story_number}-> Reference 1, Draft Doc Title 1, Draft Source Doc 1, Draft Drive 1, Final Doc Title 1, Final  Source Doc 1, Final  Drive 1 and other info (e.g code_update, official name, agency, citation and effective date )
 
-//In the example, each row will include the following data.
+{story_number-2}-> Draft Doc Title 2, Draft Source Doc 2, Draft Drive 2, Final Doc Title 2, Final  Source Doc 2, Final  Drive 2 and other info (e.g code_update, official name, agency, citation and effective date )
 
-//{story_number}-> Reference 1, Draft Doc Title 1, Draft Source Doc 1, Draft Drive 1, Final Doc Title 1, Final  Source Doc 1, Final  Drive 1 and other info (e.g //code_update, official name, agency, citation and effective date )
+{story_number-3}-> Final Doc Title 3, Final  Source Doc 3, Final  Drive 3 and other info (e.g code_update, official name, agency, citation and effective date )
 
-//{story_number-2}-> Draft Doc Title 2, Draft Source Doc 2, Draft Drive 2, Final Doc Title 2, Final  Source Doc 2, Final  Drive 2 and other info (e.g code_update, //official name, agency, citation and effective date )
-
-//{story_number-3}-> Final Doc Title 3, Final  Source Doc 3, Final  Drive 3 and other info (e.g code_update, official name, agency, citation and effective date )
-
-// To use previous step data, pass the `steps` object to the run() function
+To use previous step data, pass the `steps` object to the run() function
 export default defineComponent({
   async run({ steps, $ }) {
 
@@ -631,10 +622,10 @@ export default defineComponent({
   },
 })
 
-//8. Upsert_Coda_Entries - Python
-//https://snipboard.io/fe6Uvk.jpg
+8. Upsert_Coda_Entries - Python
+https://snipboard.io/fe6Uvk.jpg
 
-//This code step, inserts/update the parsed data to Coda table ‘Auto-CodeBook’. Every trigger event, we need to perform multiple insertion, update or query(specially //for sources with multiple links).  However, Pipedream has a limitation of not being able to perform a code step multiple times. See this link. One workaround to this //limitation is to invoke another HTTP requests which may consume multiple credits for each trigger event. This is very expensive since Pipedream counts the number of //credits for a price. Thus, the pre-built code step action of upserting to Coda is rewritten to a Python code to minimize the credit usage to only 1 per trigger //event.
+This code step, inserts/update the parsed data to Coda table ‘Auto-CodeBook’. Every trigger event, we need to perform multiple insertion, update or query(specially for sources with multiple links).  However, Pipedream has a limitation of not being able to perform a code step multiple times. See this link. One workaround to this limitation is to invoke another HTTP requests which may consume multiple credits for each trigger event. This is very expensive since Pipedream counts the number of credits for a price. Thus, the pre-built code step action of upserting to Coda is rewritten to a Python code to minimize the credit usage to only 1 per trigger event.
 
 import requests
 
@@ -876,9 +867,10 @@ def handler(pd: "pipedream"):
     else:
       break
  
-//Everything that is newly inserted, updated and to be deleted will have an uncheck value for “Reviewed Entry” column, so that we can still verify the correctness of //data, if there is any. Also, there are columns that still needs to be manually entered like below:
 
-//https://snipboard.io/PnNrwC.jpg
+Everything that is newly inserted, updated and to be deleted will have an uncheck value for “Reviewed Entry” column, so that we can still verify the correctness of data, if there is any. Also, there are columns that still needs to be manually entered like below:
+
+https://snipboard.io/PnNrwC.jpg
 
 
 
